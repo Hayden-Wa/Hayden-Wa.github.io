@@ -1,0 +1,123 @@
+---
+title: "DataAnalysis"
+author: "Hayden Wainwright"
+date: "1/23/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Data Analysis of Species Limb Width and Limb Length
+
+
+## Initial Analysis
+
+I will start by first loading in any packages I will need. Specifically I will need to use dplyr, knitr and ggplot2.
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(knitr)
+
+```
+
+I will now load in the data from the measurmeent file as the object MData
+
+```{r}
+MData <- read.csv("Data/measurement.csv", row.names = 1)
+```
+
+I wanted to change the collumn names to a 3 letter short form of Spc for speices, LmL for Limb length, LmW for limb width, UnW for units of width, and UnL for units of length. 
+
+```{r}
+MData <- rename(MData, Spc =Species, LmW =Limb.Width, UnW =unitsW, LmL =Limb.Length, UnL =unitsL)
+```
+
+
+## Volume of Limbs
+
+I also want to calcume the volume of the limbs. To do this I needed to correct the numerical variable for each species' limb width and length with the units assigned to it. This is down below using the conditional element selection function ifelse(). I then reassigned the units for the dimensions of the limbs to all be cm after the correction was made. 
+
+```{r}
+LmW <- ifelse(MData$UnW == "cm", 1, 0.1)*MData$LmW
+
+LmL <- ifelse(MData$UnL == "cm", 1, 0.1)*MData$LmL
+
+MData$UnW <- "cm"
+
+MData$UnL <- "cm"
+
+```
+
+
+Once these corrections were complete I was able to find the area of the limbs by treating them as a cylinder with the width being the diameter of the cylider. 
+
+```{r}
+MData <- mutate(MData, Volume = pi*LmL*((LmW/2)^2))
+
+MData
+```
+## Grouping Data by Plants and Animals
+It was decided to group the species as either animal or plant. A collumn was added to denote this distinction and the data were then grouped by this distinction. 
+
+```{r}
+MData$Type <- c("Animal", "Animal", "Animal", "Animal","Animal","Animal","Animal", "Plant", "Plant", "Plant")
+
+SpeciesType <- group_by(MData, Type)
+
+```
+
+I then wanted to see how the length, width, and volume of limbs varied between plants and animals studied. To this end, a table was created displaying the mean and standard deviation of the aforementioned traits. 
+
+```{r}
+TraitsByGroup <- summarize(SpeciesType, Limb.Length.AVG = mean(LmL), Limb.Length.SD = sd(LmL), Limb.Width.AVG = mean(LmW), Limb.Width.SD = sd(LmW), Volume.AVG = mean(Volume), Volume.SD = sd(Volume))
+
+ kable(TraitsByGroup, caption = "Table 1.0 Average (AVG) and standard deiation (SD) of limb width, length, and volume for a series of species grouped by plants and animals")
+
+```
+
+## Plotting 
+
+I wanted a basic plot of the limb width against limb length to identify any potential correlation between the two measurements. I wanted this to be a simple 
+
+```{r}
+Limb.Graph1 <- ggplot(data = MData, aes(x=LmL, y=LmW))+
+  geom_point()+
+  labs(x="Limb Length (cm)", y="Limb Width (cm)")+
+  theme_classic()
+
+print(Limb.Graph1)
+```
+
+Now, I am interested in only plotting the width and length that correspond to limbs with above-average volume. To this end, I first calculated the mean limb volume and seperated my data based on whether the volume for each row was above or below the mean. I then only plotted the data for points corresponding to above average volume. 
+
+```{r}
+Volume.AVG <- mean(MData$Volume)
+
+Above.AVG.Volume <- filter(MData, Volume>Volume.AVG)
+
+Above.AVG.Graph <- qplot(LmL, LmW, data = Above.AVG.Volume, xlab ="Limb Length (cm)", ylab = "Limb Width (cm)")+ theme_classic()
+  
+print(Above.AVG.Graph)
+
+```
+
+Finally, I would like a table that displays only the species and their respective limb volumes that correspond to a volume less than the average. To do this I filtered my data to only include species below the average volume and then created a table using the function kable. 
+
+
+```{r}
+Lower.AVG.Volume <- filter(MData, Volume < Volume.AVG)
+
+Lower.AVG.Volume <- data.frame("Species" = Lower.AVG.Volume$Spc, "Volume" = Lower.AVG.Volume$Volume)
+
+kable(Lower.AVG.Volume, align = 'c', caption = "Table 2. Species name and limb volume for species with below average limb volume")
+
+
+```
+
+
+
+
+
