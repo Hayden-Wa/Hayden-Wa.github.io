@@ -36,14 +36,16 @@ MData <- rename(MData, Spc =Species, LmW =Limb.Width, UnW =unitsW, LmL =Limb.Len
 ```
 
 
+
+
 ## Volume of Limbs
 
 I also want to calcume the volume of the limbs. To do this I needed to correct the numerical variable for each species' limb width and length with the units assigned to it. This is down below using the conditional element selection function ifelse(). I then reassigned the units for the dimensions of the limbs to all be cm after the correction was made. 
 
 ```{r}
-LmW <- ifelse(MData$UnW == "cm", 1, 0.1)*MData$LmW
+MData$LmW <- ifelse(MData$UnW == "cm", 1, 0.1)*MData$LmW
 
-LmL <- ifelse(MData$UnL == "cm", 1, 0.1)*MData$LmL
+MData$LmL <- ifelse(MData$UnL == "cm", 1, 0.1)*MData$LmL
 
 MData$UnW <- "cm"
 
