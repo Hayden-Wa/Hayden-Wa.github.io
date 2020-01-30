@@ -1,0 +1,62 @@
+---
+title: "Regex"
+author: "Hayden Wainwright"
+date: "1/29/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## BIOL 812 Week 4 Assignment
+#### Hayden Wainwright
+
+### Introduction and Initial Object Assignment
+In this assignment I will be using both dplyr and regular expression based commands to modify the species measurement data created in last week's assignment. TO start I will be loading in dplyr, ggplot, and knitr packages.
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(knitr)
+
+```
+I will now be importing my measurment.csv file as MData
+
+```{r}
+MData <- read.csv("Data/measurement.csv")
+```
+
+
+### Creating a New Species Collumn
+
+I would like to create a collumn of the species names that contains only the first letter and a period based on the variables in my original species collumn. 
+
+```{r}
+
+MData <- mutate(MData, Sp = gsub("(\\w)\\w+(\\s\\w+)","\\1\\.\\2",Species))
+
+print(MData)
+```
+
+### Creating a New Data Set
+
+Now that I have created a new collumn with a shortened version of the specie names I am going to create a new data set that contains the shortened Sp collumn instead of the full name species collumn. I also want this collumn to be at the front of the data set, in the place where the old species collumn was. 
+
+```{r}
+MData2 <- select(MData, Sp, Limb.Width:unitsL)
+
+print(MData2)
+
+
+```
+
+This completes the new dataset. I will now knit my file and push the files to GitHub. 
+
+
+
+
+
+
+
+
